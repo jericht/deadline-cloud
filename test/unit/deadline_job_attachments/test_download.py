@@ -1305,6 +1305,27 @@ class TestFullDownload:
             output_downloader.set_root_path(original_root="/wrong_root", new_root="/new_root_path")
 
     @mock_aws
+    def test_OutputDownloader_set_root_path_expanduser(self) -> None:
+        # GIVEN
+        mock_outputdownloader = MagicMock()
+        original_root = os.path.join("/tmp", "original_root")
+        new_root = os.path.join("~", "asset_root")
+        mock_outputdownloader.outputs_by_root = {
+            original_root: "groot",
+        }
+
+        # WHEN
+        OutputDownloader.set_root_path(
+            self=mock_outputdownloader,
+            original_root=original_root,
+            new_root=new_root,
+        )
+
+        # THEN
+        assert len(mock_outputdownloader.outputs_by_root) == 1
+        assert os.path.expanduser(new_root) in mock_outputdownloader.outputs_by_root
+
+    @mock_aws
     def test_OutputDownloader_download_job_output_when_skip(
         self, farm_id, queue_id, tmp_path: Path
     ):

@@ -1117,10 +1117,13 @@ class OutputDownloader:
         """
         Changes the root path for downloading output files, (which is the root path
         saved in the S3 metadata for the output manifest by default,) with a custom path.
-        (It will store the new root path as an absolute path.)
+        The `new_root` path will have the following transformations applied:
+        - Normalizes the path with `os.path.normpath` (e.g. removes unnecessary relative paths `..`)
+        - Expands leading tilde (~) character to corresponding user home directory with pathlib.Path.expanduser
+        - Makes the path absolute if a relative path is given (prepends current working directory) with pathlib.Path.absolute
         """
         # Need to use absolute to not resolve symlinks, but need normpath to get rid of relative paths, i.e. '..'
-        new_root = str(os.path.normpath(Path(new_root).absolute()))
+        new_root = str(os.path.normpath(Path(new_root).expanduser().absolute()))
 
         if original_root not in self.outputs_by_root:
             raise ValueError(
